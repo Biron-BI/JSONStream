@@ -73,6 +73,8 @@ exports.parse = function (opts) {
         if (!c) return
         if (! check(key, c.key)) {
           setHeaderFooter(c.key, value)
+          if (header === false && footer === false)
+            this.stack[j].value = null
           return
         }
         emitKey = !!key.emitKey;
