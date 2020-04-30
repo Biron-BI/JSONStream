@@ -1,5 +1,7 @@
 # JSONStream
 
+a fork ok [JSONStream](https://github.com/dominictarr/JSONStream) which permits more configuration. You can disable events for header & footer (an so on, avoid OOM when header is too huge)
+
 streaming JSON.parse and stringify
 
 ![](https://secure.travis-ci.org/dominictarr/JSONStream.png?branch=master)
@@ -16,19 +18,19 @@ var request = require('request')
   , es = require('event-stream')
 
 request({url: 'http://isaacs.couchone.com/registry/_all_docs'})
-  .pipe(JSONStream.parse('rows.*'))
+  .pipe(JSONStream.parse({path: 'rows.*'}))
   .pipe(es.mapSync(function (data) {
     console.error(data)
     return data
   }))
 ```
 
-## JSONStream.parse(path)
+## JSONStream.parse(opts)
 
 parse stream of values that match a path
 
 ``` js
-  JSONStream.parse('rows.*.doc')
+  JSONStream.parse({path:'rows.*.doc'})
 ```
 
 The `..` operator is the recursive descent operator from [JSONPath](http://goessner.net/articles/JsonPath/), which will match a child at any depth (see examples below).
@@ -79,7 +81,7 @@ we are probably most interested in the `rows.*.doc`
 create a `Stream` that parses the documents from the feed like this:
 
 ``` js
-var stream = JSONStream.parse(['rows', true, 'doc']) //rows, ANYTHING, doc
+var stream = JSONStream.parse({path:['rows', true, 'doc']}) //rows, ANYTHING, doc
 
 stream.on('data', function(data) {
   console.log('received:', data);
@@ -95,7 +97,7 @@ awesome!
 In case you wanted the contents the doc emitted:
 
 ``` js
-var stream = JSONStream.parse(['rows', true, 'doc', {emitKey: true}]) //rows, ANYTHING, doc, items in docs with keys
+var stream = JSONStream.parse({path:['rows', true, 'doc', {emitKey: true}]}) //rows, ANYTHING, doc, items in docs with keys
 
 stream.on('data', function(data) {
   console.log('key:', data.key);
@@ -107,7 +109,7 @@ stream.on('data', function(data) {
 You can also emit the path:
 
 ``` js
-var stream = JSONStream.parse(['rows', true, 'doc', {emitPath: true}]) //rows, ANYTHING, doc, items in docs with keys
+var stream = JSONStream.parse({path:['rows', true, 'doc', {emitPath: true}]}) //rows, ANYTHING, doc, items in docs with keys
 
 stream.on('data', function(data) {
   console.log('path:', data.path);
@@ -118,8 +120,8 @@ stream.on('data', function(data) {
 
 ### recursive patterns (..)
 
-`JSONStream.parse('docs..value')` 
-(or `JSONStream.parse(['docs', {recurse: true}, 'value'])` using an array)
+`JSONStream.parse({path:'docs..value'})` 
+(or `JSONStream.parse({path:['docs', {recurse: true}, 'value']})` using an array)
 will emit every `value` object that is a child, grand-child, etc. of the 
 `docs` object. In this example, it will match exactly 5 times at various depth
 levels, emitting 0, 1, 2, 3 and 4 as results.
@@ -142,7 +144,7 @@ levels, emitting 0, 1, 2, 3 and 4 as results.
 }
 ```
 
-## JSONStream.parse(pattern, map)
+## JSONStream.parse({path, map})
 
 provide a function that can be used to map or filter
 the json output. `map` is passed the value at that node of the pattern,
